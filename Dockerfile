@@ -10,14 +10,14 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     nodejs \
     npm \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Clone llama.cpp
+# Build llama.cpp
 RUN git clone --depth 1 https://github.com/ggml-org/llama.cpp.git /llama.cpp
 
-# Build llama-server
 RUN cmake -S /llama.cpp -B /llama.cpp/build \
     -DCMAKE_BUILD_TYPE=Release \
     -DGGML_NATIVE=OFF
@@ -34,7 +34,6 @@ RUN npm install --omit=dev
 
 COPY server.js ./
 
-# Model directory
 RUN mkdir -p /models
 
 ENV LLAMA_SERVER=/llama.cpp/build/bin/llama-server
@@ -43,6 +42,9 @@ ENV MODEL_PATH=/models/englishai-qwen-Q4_K_M.gguf
 
 ENV PORT=3000
 
+# Hugging Face model
+ENV HF_MODEL_URL=https://huggingface.co/vinhytb/EnglishAI-Qwen-1.5B/resolve/main/englishai-qwen-Q4_K_M.gguf
+
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "if [ ! -f \"$MODEL_PATH\" ]; then echo 'Downloading EnglishAI Q4 model...'; wget -O \"$MODEL_PATH\" \"$HF_MODEL_URL\"; fi && node server.js"]
