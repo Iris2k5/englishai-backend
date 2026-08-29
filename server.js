@@ -299,7 +299,7 @@ EnglishAI:
 /*
  * Start HTTP server
  */
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
 
     console.log(
         `EnglishAI backend running on port ${PORT}`
